@@ -1,0 +1,210 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as mp
+import seaborn as sb
+data=pd.read_csv("C:/Users/HP/Downloads/Customer_Churn.csv")
+data
+
+data.info()
+data.shape
+
+data.describe()
+
+data.isnull().sum() #No null value is present
+
+#Converting the Categorical value of column Churn into binary form
+data.loc[data.Churn=='Yes','Churn']=1
+data.loc[data.Churn=='No','Churn']=0
+data
+
+data.loc[data.MultipleLines=='No phone service','MultipleLines']
+
+#Convertng No phone service into No in MultipleLines column
+for MultipleLines in data:
+    data[MultipleLines]=data[MultipleLines].replace('No phone service','No')
+#Convertng No internet service into No in various desired columns
+list=['OnlineBackup','StreamingMovies','DeviceProtection','TechSupport','OnlineSecurity','StreamingTV']
+for i in list:
+    data[i]=data[i].replace('No internet service','No')
+
+data
+
+#Converting TotalCharges column's string data type into float data type
+type(data['TotalCharges'])
+data['TotalCharges']=data['TotalCharges'].replace(' ',np.nan)
+data['TotalCharges']=data['TotalCharges'].astype(float)
+
+#removing null values from the desired attributes
+data.dropna(inplace=True)
+
+#Converting Churn column's object data type into float data type
+data['Churn']=data['Churn'].astype(int)
+
+#Data type of TotalCharges is changed
+data.info()
+
+#Total Customer Churn Visualization
+x=data['Churn'].value_counts().values.tolist()
+y=data['Churn'].value_counts().keys()
+Y=['Yes','No']
+exp=[0.3,0.0]
+mp.pie(x,labels=Y,startangle=90,explode=exp,shadow=True,autopct='%.2f%%')
+mp.legend(title='Churn Values')
+
+#Churn-Gender wise visualization
+gen=data.groupby('gender').Churn.mean().reset_index()
+sb.barplot(x=gen['gender'],y=gen['Churn'],alpha=0.8,width=0.2)
+mp.title('Gender wise Churn rate')
+mp.xlabel('Gender')
+mp.ylabel('Churn Rate')
+mp.show()
+
+#Churn-Techsupport wise visualization
+gen=data.groupby('TechSupport').Churn.mean().reset_index()
+sb.barplot(x=gen['TechSupport'],y=gen['Churn'],alpha=0.8,width=0.2)
+mp.title('TechSupport wise Churn rate')
+mp.xlabel('TechSupport')
+mp.ylabel('Churn Rate')
+mp.show()
+
+#Churn-Internet Service wise visualization
+gen=data.groupby('InternetService').Churn.mean().reset_index()
+sb.barplot(x=gen['InternetService'],y=gen['Churn'],alpha=0.8,width=0.2)
+mp.title('InternetService wise Churn rate')
+mp.xlabel('InternetService')
+mp.ylabel('Churn Rate')
+mp.show()
+
+#Churn-Payment Method wise visualization
+gen=data.groupby('PaymentMethod').Churn.mean().reset_index()
+sb.barplot(x=gen['PaymentMethod'],y=gen['Churn'],alpha=0.8,width=0.2)
+mp.title('PaymentMethod wise Churn rate')
+mp.xlabel('PaymentMethod')
+mp.ylabel('Churn Rate')
+mp.show()
+
+#Churn-Contract wise visualization
+gen=data.groupby('Contract').Churn.mean().reset_index()
+sb.barplot(x=gen['Contract'],y=gen['Churn'],alpha=0.8,width=0.2)
+mp.title('Contract wise Churn rate')
+mp.xlabel('Contract')
+mp.ylabel('Churn Rate')
+mp.show()
+
+#Churn-Tenure wise visualization
+gen=data.groupby('tenure').Churn.mean().reset_index()
+mp.scatter(x=gen['tenure'],y=gen['Churn'],s=0.9,alpha=0.9)
+mp.title('Tenure wise Churn rate')
+mp.xlabel('Tenure')
+mp.ylabel('Churn Rate')
+mp.show()
+
+#Performing Feature Scaling
+from sklearn.preprocessing import StandardScaler
+
+#Performing Feature Scaling on Tenure, MonthlyCharges and TotalCharges
+standardscaler=StandardScaler()
+col=['tenure','MonthlyCharges','TotalCharges']
+
+#Applying feature scaling on the dataset using fit_transform method
+data[col]=standardscaler.fit_transform(data[col])
+data
+
+#Dropping the customerID attribute from the dataset
+data1=data2
+data2=data.drop(['customerID'],axis=True)
+
+#Performing One-hot encoding
+data2=pd.get_dummies(data2,dtype=int,drop_first=True)
+data2
+
+#List of updated and increased number of attriburtes in the dataset
+data2.columns
+
+#Formation of target variable 'y' and feature variable 'X'
+y=data2['Churn']
+X=data2.drop(['Churn'],axis=True)
+
+#Checking the dimension of the variables
+X.shape
+y.shape
+
+#Splitting the data into training and testing dataset in 80:20 ratio
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test=train_test_split(X,y,test_size=0.2,random_state=50)
+
+#Training and Fitting the Logistic Model
+from sklearn.linear_model import LogisticRegression
+logmodel=LogisticRegression(random_state=50)
+logmodel.fit(X_train,y_train)
+
+#Predicting the value for new data
+pred=logmodel.predict(X_test)
+
+#Observing the accuracy of the model
+def log_accuracy(y_true,y_pred):
+    accuracy = np.sum(y_true == y_pred) / len(y_true)
+    return accuracy
+print("Model accuracy of Logistic Regression",log_accuracy(y_test,pred))
+
+#Training and Fitting the RandomForest
+from sklearn.ensemble import RandomForestClassifier
+rfmodel=RandomForestClassifier(random_state=50)
+rfmodel.fit(X_train,y_train)
+
+#Predicting the value for new data
+pred=rfmodel.predict(X_test)
+
+#Observing the accuracy of the model
+def rf_accuracy(y_true,y_pred):
+    accuracy = np.sum(y_true == y_pred) / len(y_true)
+    return accuracy
+print("Model accuracy of RandomForest",rf_accuracy(y_test,pred))
+
+#Training and Fitting the K-NN Model
+from sklearn.neighbors import KNeighborsClassifier
+knnmodel=KNeighborsClassifier(n_neighbors=5,metric='minkowski')
+knnmodel.fit(X_train,y_train)
+
+#Predicting the value for new data
+pred=knnmodel.predict(X_test.values)
+
+#Observing the accuracy of the model
+def knn_accuracy(y_true,y_pred):
+    accuracy = np.sum(y_true == y_pred) / len(y_true)
+    return accuracy
+print("Model accuracy of K-NN Classifier",knn_accuracy(y_test,pred))
+
+#Training and Fitting the SVM Model
+from sklearn.svm import SVC
+svcmodel=SVC(random_state=50)
+svcmodel.fit(X_train,y_train)
+
+#Predicting the value for new data
+pred=svcmodel.predict(X_test.values)
+
+#Observing the accuracy of the model
+def svc_accuracy(y_true,y_pred):
+    accuracy = np.sum(y_true == y_pred) / len(y_true)
+    return accuracy
+print("Model accuracy of SVM",svc_accuracy(y_test,pred))
+
+#Comparing the accuracy of different models
+comp=pd.DataFrame({
+    'Score': [82.30,79.31,76.40,82.01],
+    'Model': ['Logistic_Regression','RandomForest','K-NN CLassifier','SVM']
+})
+comp
+
+#Generating Confusion Matrix for the best-fit model
+from sklearn.metrics import confusion_matrix
+cfm_logmodel=confusion_matrix(y_test,pred)
+cfm_logmodel
+
+#Predicting the Churn probability
+data['Probability_of_Churn']=logmodel.predict_proba(data2[X_test.columns])[:,1]
+data
+
+#Dataframe of Customer Churn Probability
+data[['customerID','Probability_of_Churn']].head()
+

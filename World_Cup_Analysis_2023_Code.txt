@@ -1,0 +1,479 @@
+#Importing all the necessary libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as mp
+import seaborn as sb
+data=pd.read_csv("C:/Users/HP/Downloads/CWC23_all_innings.csv")
+data
+
+#Information of the dataset
+data.info()
+
+#Statistical information of the dataset
+data.describe()
+
+#Null count of the dataset
+data.isnull().sum()
+
+#Replacing 'vs' with null in opposition attribute
+data['opposition']=data['opposition'].replace('v','',regex=True)
+data
+
+#Renaming two attributes '4s' and '6s'
+data=data.rename({'4s':'Fours'},axis='columns')
+data=data.rename({'6s':'Sixes'},axis='columns')
+data
+
+Team Performance Analysis
+
+#Teams which took highest wickets
+a=data.groupby('team')['wkts'].sum().sort_values(ascending=True)
+mp.figure(figsize=(10,5))
+f1=sb.barplot(x=a.index,y=a.values)
+f1.set_ylim([0,100])
+f1.bar_label(f1.containers[0])
+mp.title("Highest wicket-taking team")
+mp.xlabel("Teams")
+mp.ylabel("Wickets")
+mp.show()
+
+#Teams with highest maiden overs
+b=data.groupby('team')['mdns'].sum().sort_values(ascending=True)
+mp.figure(figsize=(10,5))
+f2=sb.barplot(x=b.index,y=b.values)
+f2.set_ylim([0,30])
+f2.bar_label(f2.containers[0])
+mp.title("Highest maiden-over team")
+mp.xlabel("Teams")
+mp.ylabel("Maiden Overs")
+mp.show()
+
+#Teams with best bowling-economy
+c=data.groupby('team')['econ'].mean().sort_values(ascending=True)
+mp.figure(figsize=(15,5))
+f3=sb.barplot(x=c.index,y=c.values)
+f3.set_ylim([0,10])
+f3.bar_label(f3.containers[0])
+mp.title("Best bowling-economy team")
+mp.xlabel("Teams")
+mp.ylabel("Economy")
+mp.show()
+
+#Teams with highest 4s
+d=data.groupby('team')['Fours'].sum().sort_values(ascending=True)
+mp.figure(figsize=(10,5))
+f4=sb.barplot(x=d.index,y=d.values)
+f4.set_ylim([0,300])
+f4.bar_label(f4.containers[0])
+mp.title("Highest four hitting team")
+mp.xlabel("Teams")
+mp.ylabel("4s")
+mp.show()
+
+#Teams with highest 6s
+e=data.groupby('team')['Sixes'].sum().sort_values(ascending=True)
+mp.figure(figsize=(10,5))
+f5=sb.barplot(x=e.index,y=e.values)
+f5.set_ylim([0,120])
+f5.bar_label(f5.containers[0])
+mp.title("Highest six hitting team")
+mp.xlabel("Teams")
+mp.ylabel("6s")
+mp.show()
+
+bat=data[["team","bat_or_bowl","runs"]]
+bat
+
+#Team with run-given by bowlers and run-striked by batsman
+bat=bat.groupby(['team','bat_or_bowl']).agg(runs=('runs','sum')).reset_index()
+mp.figure(figsize=(20,5))
+f6=sb.barplot(x='team',y='runs',hue='bat_or_bowl',data=bat)
+f6.bar_label(f6.containers[0])
+f6.bar_label(f6.containers[1])
+mp.xlabel("Teams")
+mp.ylabel("Runs")
+mp.show()
+
+#Team with highest/best batting performance
+bat=bat[bat.bat_or_bowl=='bat']
+ff=bat['runs'].max()
+for i in bat.values:
+    if i[2]==ff:
+        print(f'Team: {i[0]}\nRuns: {ff}')
+
+gg=data.groupby(['team']).agg(econ=('econ','mean')).reset_index()
+gg
+
+#Team with lowest/best bowling economy
+c=data.groupby('team')['econ'].mean().min()
+for i in gg.values:
+    if i[1]==c:
+        print(f'Team: {i[0]}\nEconomy: {c}')
+
+Player Performance Analysis
+
+#Bowling Performance analysis
+#Bowler's run-given wise analysis
+bowlr=data.groupby(['player','bat_or_bowl']).agg(runs=('runs','sum')).reset_index().sort_values(by='runs',ascending=True)
+bowlr=br[br.bat_or_bowl=='bowl']
+bowlr
+
+#Top 30-bowlers with least run given
+jj=bowlr.head(30).sort_values(by='runs',ascending=True)
+mp.figure(figsize=(25,10))
+f7=sb.barplot(x='player',y='runs',width=0.8,data=jj)
+f7.bar_label(f7.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-bowlers with least runs given")
+mp.xlabel("Bowlers")
+mp.ylabel("Runs")
+
+#Top 30-bowlers with most run given
+jj=bowlr.tail(30).sort_values(by='runs',ascending=False)
+mp.figure(figsize=(25,10))
+f8=sb.barplot(x='player',y='runs',width=0.8,data=jj)
+f8.bar_label(f8.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-bowlers with most runs given")
+mp.xlabel("Bowlers")
+mp.ylabel("Runs")
+
+#Bowler's maiden-over wise analysis
+bowlm=data.groupby(['player','bat_or_bowl']).agg(mdns=('mdns','sum')).reset_index().sort_values(by='mdns',ascending=True)
+bowlm=bowlm[bowlm.bat_or_bowl=='bowl']
+bowlm
+
+#Top 30-bowlers with least maiden overs
+pp=bowlm.head(30).sort_values(by='mdns',ascending=True)
+mp.figure(figsize=(25,10))
+f9=sb.barplot(x='player',y='mdns',width=0.8,data=pp)
+f9.bar_label(f9.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-bowlers with least maiden overs")
+mp.xlabel("Bowlers")
+mp.ylabel("Maiden Overs")
+
+#Top 30-bowlers with most maiden overs
+pp=bowlm.tail(30).sort_values(by='mdns',ascending=False)
+mp.figure(figsize=(25,10))
+f9=sb.barplot(x='player',y='mdns',width=0.8,data=pp)
+f9.bar_label(f9.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-bowlers with most maiden overs")
+mp.xlabel("Bowlers")
+mp.ylabel("Maiden Overs")
+
+#Bowler's bowl wise analysis
+bowlb=data.groupby(['player','bat_or_bowl']).agg(bb_bf=('bb_bf','sum')).reset_index().sort_values(by='bb_bf',ascending=True)
+bowlb=bowlb[bowlb.bat_or_bowl=='bowl']
+bowlb
+
+#Top 30-bowlers with least bowl bowled
+oo=bowlb.head(30).sort_values(by='bb_bf',ascending=True)
+mp.figure(figsize=(25,10))
+f10=sb.barplot(x='player',y='bb_bf',width=0.8,data=oo)
+f10.bar_label(f10.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-bowlers with least bowl bowled")
+mp.xlabel("Bowlers")
+mp.ylabel("Bowls bowled")
+
+#Top 30-bowlers with most bowl bowled
+oo=bowlb.tail(30).sort_values(by='bb_bf',ascending=False)
+mp.figure(figsize=(25,10))
+f10=sb.barplot(x='player',y='bb_bf',width=0.8,data=oo)
+f10.bar_label(f10.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-bowlers with most bowl bowled")
+mp.xlabel("Bowlers")
+mp.ylabel("Bowls bowled")
+
+#Bowler's wicket wise analysis
+bowlw=data.groupby(['player','bat_or_bowl']).agg(wkts=('wkts','sum')).reset_index().sort_values(by='wkts',ascending=True)
+bowlw=bowlw[bowlw.bat_or_bowl=='bowl']
+bowlw
+
+#Top 30-bowler with least wicket taken
+yy=bowlw.head(30).sort_values(by='wkts',ascending=True)
+mp.figure(figsize=(25,10))
+f11=sb.barplot(x='player',y='wkts',width=0.8,data=yy)
+f11.bar_label(f11.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-bowler with least wickets taken")
+mp.xlabel("Bolwer")
+mp.ylabel("Wickets")
+
+#Top 30-bowler with most wicket taken
+yy=bowlw.tail(30).sort_values(by='wkts',ascending=False)
+mp.figure(figsize=(25,10))
+f11=sb.barplot(x='player',y='wkts',width=0.8,data=yy)
+f11.bar_label(f11.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-bowler with most wickets taken")
+mp.xlabel("Bolwer")
+mp.ylabel("Wickets")
+
+hlw=lw['wkts'].max()
+for i in lw.values:
+    if i[2]==hlw:
+        print(f'Player: {i[0]},\nWickets: {hlw}')
+
+#Batting Performance analysis
+#Batsman's batting-duration wise analysis
+batt=data.groupby(['player','bat_or_bowl']).agg(mins=('mins','sum')).reset_index().sort_values(by='mins',ascending=True)
+batt=batt[batt.bat_or_bowl=='bat']
+batt
+
+#Top 30-batsman with least batting-duration
+ii=batt.head(30).sort_values(by='mins',ascending=True)
+mp.figure(figsize=(25,10))
+f12=sb.barplot(x='player',y='mins',width=0.8,data=ii)
+f12.bar_label(f12.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-batsman with least batting-duration")
+mp.xlabel("Batsman")
+mp.ylabel("Duration in mins")
+
+#Top 30-batsman with most batting-duration
+ii=batt.tail(30).sort_values(by='mins',ascending=False)
+mp.figure(figsize=(25,10))
+f12=sb.barplot(x='player',y='mins',width=0.8,data=ii)
+f12.bar_label(f12.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-batsman with most batting-duration")
+mp.xlabel("Batsman")
+mp.ylabel("Duration in mins")
+
+#Batsman's out/not-out wise analysis
+batw=data.groupby(['player','bat_or_bowl']).agg(not_out=('not_out','sum')).reset_index().sort_values(by='not_out',ascending=True)
+batw=batw[batw.bat_or_bowl=='bat']
+batw
+
+#Top 30-batsman with least not-outs
+uu=batw.head(30).sort_values(by='not_out',ascending=True)
+mp.figure(figsize=(25,10))
+f13=sb.barplot(x='player',y='not_out',width=0.8,data=uu)
+f13.bar_label(f13.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-batsman with least not-outs")
+mp.xlabel("Batsman")
+mp.ylabel("Not_Outs")
+
+#Top 30-batsman with most not-outs
+uu=batw.tail(30).sort_values(by='not_out',ascending=False)
+mp.figure(figsize=(25,10))
+f13=sb.barplot(x='player',y='not_out',width=0.8,data=uu)
+f13.bar_label(f13.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-batsman with most not-outs")
+mp.xlabel("Batsman")
+mp.ylabel("Not_Outs")
+
+#Top 30-batsman with most fours
+bat4=data.groupby(['player','bat_or_bowl']).agg(Fours=('Fours','sum')).reset_index().sort_values(by='Fours',ascending=True)
+bat4=bat4[bat4.bat_or_bowl=='bat']
+bat4
+
+#Top 30-batsman with least 4s scored
+yy=bat4.head(30).sort_values(by='Fours',ascending=True)
+mp.figure(figsize=(25,10))
+f14=sb.barplot(x='player',y='Fours',width=0.8,data=yy)
+f14.bar_label(f14.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-batsman with least 4s scored")
+mp.xlabel("Batsman")
+mp.ylabel("4s")
+
+#Top 30-batsman with most 4s scored
+yy=bat4.tail(30).sort_values(by='Fours',ascending=False)
+mp.figure(figsize=(25,10))
+f14=sb.barplot(x='player',y='Fours',width=0.8,data=yy)
+f14.bar_label(f14.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-batsman with most 4s scored")
+mp.xlabel("Batsman")
+mp.ylabel("4s")
+
+#Top 30-batsman with most sixes
+bat6=data.groupby(['player','bat_or_bowl']).agg(Sixes=('Sixes','sum')).reset_index().sort_values(by='Sixes',ascending=True)
+bat6=bat6[bat6.bat_or_bowl=='bat']
+bat6
+
+#Top 30-batsman with least 6s scored
+tt=bat6.head(30).sort_values(by='Sixes',ascending=True)
+mp.figure(figsize=(25,10))
+f15=sb.barplot(x='player',y='Sixes',width=0.8,data=tt)
+f15.bar_label(f15.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-batsman with least 6s scored")
+mp.xlabel("Batsman")
+mp.ylabel("6s")
+
+#Top 30-batsman with most 6s scored
+tt=bat6.tail(30).sort_values(by='Sixes',ascending=False)
+mp.figure(figsize=(25,10))
+f15=sb.barplot(x='player',y='Sixes',width=0.8,data=tt)
+f15.bar_label(f15.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-batsman with most 6s scored")
+mp.xlabel("Batsman")
+mp.ylabel("6s")
+
+#Top 30-batsman with runs-scored
+batr=data.groupby(['player','bat_or_bowl']).agg(runs=('runs','sum')).reset_index().sort_values(by='runs',ascending=True)
+batr=batr[batr.bat_or_bowl=='bat']
+batr
+
+#Top 30-batsman with least run striked
+kk=batr.head(30).sort_values(by='runs',ascending=True)
+mp.figure(figsize=(25,10))
+f90=sb.barplot(x='player',y='runs',width=0.8,data=kk)
+f90.bar_label(f90.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-batsman with least runs given")
+mp.xlabel("Batsman")
+mp.ylabel("Runs")
+
+#Top 30-batsman with most run striked
+kk=batr.tail(30).sort_values(by='runs',ascending=False)
+mp.figure(figsize=(25,10))
+f90=sb.barplot(x='player',y='runs',width=0.8,data=kk)
+f90.bar_label(f9.containers[0])
+mp.xticks(rotation=90)
+mp.title("Top 30-batsman with most runs striked")
+mp.xlabel("Batsman")
+mp.ylabel("Runs")
+
+#Leading run-scorer in batsman
+hlr=lr['runs'].max()
+for i in lr.values:
+    if i[2]==hlr:
+        print(f'Player: {i[0]},\nRuns: {hlr}')
+
+#Impact of player's performance on team's performance
+per=data.drop(['player','team','bat_or_bowl','ground','opposition','start_date'],axis=True)
+per.corr()
+
+mp.figure(figsize=(15,7.5))
+mp.title("Impact of player's performance on team's performance'")
+sb.heatmap(per.corr(),annot=True)
+
+Opposition and Ground Analysis
+
+#Teams performance against different opposition
+#Indian team performance analysis
+indp=data[data['team']=='IND'].groupby(['opposition','bat_or_bowl']).agg(runs=('runs','sum')).reset_index()
+ind_batp=indp[indp.bat_or_bowl=='bat']
+ind_bowp=indp[indp.bat_or_bowl=='bowl']
+print(ind_batp,'\n')
+print(ind_bowp)
+
+#Indian team's scored-run analysis
+mp.figure(figsize=(15,5))
+p1=sb.barplot(x='opposition',y='runs',data=ind_batp)
+mp.bar_label(p1.containers[0])
+mp.title("Indian team's scored-run analysis")
+mp.xlabel('Teams')
+mp.ylabel('Runs scored')
+
+#Indian team's run-given analysis
+mp.figure(figsize=(15,5))
+p1=sb.barplot(x='opposition',y='runs',data=ind_bowp)
+mp.bar_label(p1.containers[0])
+mp.title("Indian team's run-given analysis")
+mp.xlabel('Teams')
+mp.ylabel('Runs given')
+
+#Indian team's wicket-taken analysis
+ind_wkts=data[data['team']=='IND'].groupby('opposition').agg(wkts=('wkts','sum')).reset_index()
+ind_wkts
+
+mp.figure(figsize=(15,5))
+p2=sb.barplot(x='opposition',y='wkts',data=ind_wkts)
+p2.bar_label(p2.containers[0])
+mp.title('Wickets taken by India')
+mp.xlabel('Teams')
+mp.ylabel('Wickets')
+
+#Team's run-on-ground performance analysis
+team_gp=data.groupby(['ground','bat_or_bowl']).agg(runs=('runs','sum')).reset_index()
+team_gbatp=team_gp[team_gp.bat_or_bowl=='bat']
+team_gbowp=team_gp[team_gp.bat_or_bowl=='bowl']
+print(team_gbatp,'\n')
+print(team_gbowp)
+
+mp.figure(figsize=(15,5))
+p3=sb.barplot(x='ground',y='runs',data=team_gbatp)
+mp.bar_label(p3.containers[0])
+mp.title('Runs-scored on ground analyis')
+mp.xlabel('Ground')
+mp.ylabel('Runs Scored')
+
+mp.figure(figsize=(15,5))
+p3=sb.barplot(x='ground',y='runs',data=team_gbowp)
+mp.bar_label(p3.containers[0])
+mp.title('Runs-given on ground analyis')
+mp.xlabel('Ground')
+mp.ylabel('Runs Given')
+
+#Team's wicket-on-ground performance analysis
+team_gw=data.groupby(['ground','bat_or_bowl']).agg(wkts=('wkts','sum')).reset_index()
+team_gw=team_gw[team_gw.bat_or_bowl=='bowl']
+team_gw
+
+mp.figure(figsize=(15,5))
+p4=sb.barplot(x='ground',y='wkts',data=team_gw)
+p4.bar_label(p4.containers[0])
+mp.title("Team's wicket-on-ground analysis")
+mp.xlabel('Ground')
+mp.ylabel('Wickets')
+
+countries_strongness_ground=data[data['bat_or_bowl']=='bat'].groupby(['team','ground']).agg(runs=('runs','sum')).reset_index().sort_values(by='runs',ascending=False)
+countries_strongness_ground
+
+mp.figure(figsize=(15,5))
+p5=sb.barplot(x='ground',y='runs',hue='team',data=countries_strongness_ground)
+for i in range(10):
+    p5.bar_label(p5.containers[i])
+mp.title("Run-wise team's ground strength")
+mp.xlabel("Ground")
+mp.ylabel("Runs")
+
+max_runs_index=countries_strongness_ground.groupby('ground')['runs'].idxmax()
+max_runs_teams=countries_strongness_ground.loc[max_runs_index].sort_values(by='runs',ascending=True)
+max_runs_teams
+
+Temporal Analysis
+
+data=pd.read_csv('C:/Users/HP/Downloads/CWC23_all_innings.csv', parse_dates=['start_date'])
+data.info()
+
+#data['start_date']=pd.to_datetime(data.start_date,format='%d-%m-%Y')
+data
+
+data_per=data[['team','start_date','overs','wkts','runs']]
+data_per
+
+per=data_per.groupby(['start_date','team']).agg(overs=('overs','sum')).reset_index()
+per
+
+mp.figure(figsize=(15,5))
+tw=sb.lineplot(x='start_date',y='overs',hue='team',data=per,marker='o')
+mp.title('Temporal Change trend')
+mp.xlabel('Match start date')
+mp.ylabel('Overs played')
+
+per=data_per.groupby(['start_date','team','overs']).agg({'wkts':'sum','runs':'sum'}).reset_index()
+per
+
+mp.figure(figsize=(15,5))
+tw=sb.lineplot(x='start_date',y='runs',hue='overs',data=per,marker='o')
+mp.title('Temporal Change trend')
+mp.xlabel('Match start date')
+mp.ylabel('Run scored')
+
+mp.figure(figsize=(15,5))
+tw=sb.lineplot(x='start_date',y='wkts',hue='overs',data=per,marker='o')
+mp.title('Temporal Change trend')
+mp.xlabel('Match start date')
+mp.ylabel('Wickets taken')
